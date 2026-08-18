@@ -1,0 +1,21 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+
+# macOS
+.DS_Store
+*.local
+
+# Your Supabase keys live here. Never commit this file.
+.env
+.env.local
+.env.*.local
+
+# Vercel CLI project link
+.vercel
+
+# scratch folder from patch files — safe to delete
+_to_delete
