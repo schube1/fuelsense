@@ -27,7 +27,6 @@ export default function RingLegend({ date, percents, meta }) {
         >
           <i className="swatch" style={{ background: r.color }} />
           <span className="legend-name">{r.name}</span>
-          <span className="legend-val tnum">{Math.round(Math.min(r.pct, 1) * 100)}%</span>
           <span className="legend-meta">{r.meta}</span>
         </button>
       ))}
