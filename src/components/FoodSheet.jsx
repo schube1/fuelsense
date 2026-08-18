@@ -1,16 +1,101 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Sheet from './Sheet.jsx';
+import * as store from '../data/store.js';
+import { filterLibrary } from '../lib/food.js';
 
 /** Add or edit one food entry: description, calories, protein. Nothing else. */
 export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
   const editing = Boolean(initial);
   const [description, setDescription] = useState(initial?.description ?? '');
-  const [calories, setCalories] = useState(
-    initial ? String(initial.calories) : '',
-  );
+  const [calories, setCalories] = useState(initial ? String(initial.calories) : '');
   const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
+  const [source, setSource] = useState('manual');
+
+  const [mode, setMode] = useState('form'); // 'form' | 'library'
+  const [library, setLibrary] = useState(null);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    if (mode === 'library' && library === null) {
+      store.getFoodLibrary().then(setLibrary);
+    }
+  }, [mode, library]);
+
+  const filtered = useMemo(() => filterLibrary(library ?? [], query), [library, query]);
 
   const canSave = description.trim().length > 0;
+
+  function pickItem(item) {
+    setDescription(item.description);
+    setCalories(String(item.calories));
+    setProtein(String(item.protein));
+    setSource('library');
+    setMode('form');
+  }
+
+  if (mode === 'library') {
+    return (
+      <Sheet
+        title="Past meals"
+        onClose={onClose}
+        action={
+          <button
+            className="btn-ghost"
+            style={{ fontSize: 13 }}
+            onClick={() => setMode('form')}
+          >
+            ← Back
+          </button>
+        }
+      >
+        <div className="field">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search…"
+            autoFocus
+            autoComplete="off"
+          />
+        </div>
+
+        <div
+          style={{
+            overflowY: 'auto',
+            maxHeight: '55vh',
+            marginTop: 4,
+          }}
+        >
+          {library === null && (
+            <div className="empty">Loading…</div>
+          )}
+
+          {library !== null && library.length === 0 && (
+            <div className="empty">
+              No meals logged yet — add one manually!
+            </div>
+          )}
+
+          {library !== null && library.length > 0 && filtered.length === 0 && (
+            <div className="empty">No matches for "{query}"</div>
+          )}
+
+          {filtered.map((item) => (
+            <button
+              key={item.key}
+              className="meal-row"
+              onClick={() => pickItem(item)}
+            >
+              <span className="meal-desc">{item.description}</span>
+              <span className="meal-nums">
+                <b className="tnum">{item.calories.toLocaleString()}</b>
+                <span className="tnum">{item.protein} g</span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </Sheet>
+    );
+  }
 
   return (
     <Sheet
@@ -70,11 +155,18 @@ export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
             description: description.trim(),
             calories: Number(calories) || 0,
             protein: Number(protein) || 0,
+            source,
           })
         }
       >
         {editing ? 'Save changes' : 'Add entry'}
       </button>
+
+      {!editing && (
+        <button className="btn btn-ghost" onClick={() => setMode('library')}>
+          Choose from past meals
+        </button>
+      )}
 
       <button className="btn btn-ghost" onClick={onClose}>
         Cancel

@@ -36,6 +36,7 @@ export const getAllDays = local.getAllDays;
 export const getEarliestDate = local.getEarliestDate;
 export const getExerciseNames = local.getExerciseNames;
 export const getSettings = local.getSettings;
+export const getFoodLibrary = local.getFoodLibrary;
 
 export async function saveSettings(patch) {
   const next = await local.saveSettings(patch);
@@ -115,7 +116,7 @@ export function removeExercise(date, exerciseRowId) {
 
 // ---------------------------------------------------------------- nutrition
 
-export function addFood(date, { description, calories, protein }) {
+export function addFood(date, { description, calories, protein, source }) {
   return write(date, (day) => ({
     ...day,
     nutrition: {
@@ -127,6 +128,7 @@ export function addFood(date, { description, calories, protein }) {
           calories: Number(calories) || 0,
           protein: Number(protein) || 0,
           loggedAt: new Date().toISOString(),
+          ...(source ? { source } : {}),
         },
       ],
     },

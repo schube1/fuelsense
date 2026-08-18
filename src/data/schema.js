@@ -86,6 +86,7 @@ export function normalizeDay(day, date, settings = DEFAULT_SETTINGS) {
         calories: Number(e.calories) || 0,
         protein: Number(e.protein) || 0,
         loggedAt: e.loggedAt ?? null,
+        source: e.source ?? 'manual',
       })),
     },
     water: {
