@@ -63,6 +63,8 @@ export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
             overflowY: 'auto',
             maxHeight: '55vh',
             marginTop: 4,
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
           }}
         >
           {library === null && (
@@ -79,19 +81,21 @@ export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
             <div className="empty">No matches for "{query}"</div>
           )}
 
-          {filtered.map((item) => (
-            <button
-              key={item.key}
-              className="meal-row"
-              onClick={() => pickItem(item)}
-            >
-              <span className="meal-desc">{item.description}</span>
-              <span className="meal-nums">
-                <b className="tnum">{item.calories.toLocaleString()}</b>
-                <span className="tnum">{item.protein} g</span>
-              </span>
-            </button>
-          ))}
+          <div className="stack">
+            {filtered.map((item) => (
+              <button
+                key={item.key}
+                className="meal-row"
+                onClick={() => pickItem(item)}
+              >
+                <span className="meal-desc">{item.description}</span>
+                <span className="meal-nums">
+                  <b className="tnum">{item.calories.toLocaleString()}</b>
+                  <span className="tnum">{item.protein} g</span>
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       </Sheet>
     );
