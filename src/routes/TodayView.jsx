@@ -39,7 +39,7 @@ export default function TodayView({ date }) {
   return (
     <div className="body">
       <div className="rings-wrap">
-        <Rings percents={percents} size={200} />
+        <Rings percents={percents} size={200} layout="row" />
       </div>
 
       <RingLegend date={date} percents={percents} meta={meta} />
