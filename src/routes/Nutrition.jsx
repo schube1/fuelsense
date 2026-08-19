@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 
 import ScreenHeader from '../components/ScreenHeader.jsx';
 import FoodSheet from '../components/FoodSheet.jsx';
+import SmartAddSheet from '../components/SmartAddSheet.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
 import { useDay } from '../hooks/useDay.js';
 import * as store from '../data/store.js';
@@ -19,8 +20,10 @@ export default function Nutrition() {
   const [params, setParams] = useSearchParams();
   const { day, loading, run } = useDay(date);
 
-  // Arriving from the home screen's "+ Meal" button opens the sheet directly.
+  // sheet: null | 'new' | 'smart' | entryId
   const [sheet, setSheet] = useState(params.get('add') ? 'new' : null);
+  // draft pre-fills FoodSheet when coming from SmartAddSheet
+  const [draft, setDraft] = useState(null);
 
   if (loading || !day) return <div className="loading">Loading…</div>;
 
@@ -34,6 +37,7 @@ export default function Nutrition() {
 
   const closeSheet = () => {
     setSheet(null);
+    setDraft(null);
     if (params.get('add')) {
       params.delete('add');
       setParams(params, { replace: true });
@@ -54,6 +58,14 @@ export default function Nutrition() {
     closeSheet();
   };
 
+  // SmartAddSheet resolved a draft → switch to FoodSheet pre-filled
+  const handleDraft = (d) => {
+    setDraft(d);
+    setSheet('new');
+  };
+
+  const openSmart = () => setSheet('smart');
+
   return (
     <div className="screen">
       <ScreenHeader
@@ -71,8 +83,6 @@ export default function Nutrition() {
               <em> / {day.goals.calorieGoal.toLocaleString()}</em>
             </div>
             <ProgressBar pct={calPct} color="var(--nutrition)" />
-            {/* Going over still counts as hitting the goal — the ring stays
-                full. This chip is the honest reporting the ring doesn't do. */}
             {overCal && (
               <span className="over-chip">
                 +{(totals.calories - day.goals.calorieGoal).toLocaleString()} over
@@ -108,18 +118,28 @@ export default function Nutrition() {
             </button>
           ))}
 
+          <button className="btn btn-food" onClick={openSmart}>
+            ✨ Describe / Scan
+          </button>
+
           <button className="btn btn-dashed" onClick={() => setSheet('new')}>
-            + Add entry
+            + Add entry manually
           </button>
         </div>
       </div>
 
-      {sheet && (
+      {sheet === 'smart' && (
+        <SmartAddSheet onDraft={handleDraft} onClose={closeSheet} />
+      )}
+
+      {sheet && sheet !== 'smart' && (
         <FoodSheet
           initial={editing}
+          draft={sheet === 'new' && !editing ? draft : null}
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={closeSheet}
+          onOpenSmart={openSmart}
         />
       )}
     </div>

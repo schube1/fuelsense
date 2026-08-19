@@ -3,13 +3,23 @@ import Sheet from './Sheet.jsx';
 import * as store from '../data/store.js';
 import { filterLibrary } from '../lib/food.js';
 
-/** Add or edit one food entry: description, calories, protein. Nothing else. */
-export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
+/**
+ * Add or edit one food entry.
+ *
+ * `draft` — optional pre-filled values from SmartAddSheet or "Choose from past meals".
+ *            Only applied when creating a new entry (not when editing an existing one).
+ * `onOpenSmart` — called when the user taps "✨ Describe / Scan".
+ */
+export default function FoodSheet({ initial, draft, onSave, onDelete, onClose, onOpenSmart }) {
   const editing = Boolean(initial);
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [calories, setCalories] = useState(initial ? String(initial.calories) : '');
-  const [protein, setProtein] = useState(initial ? String(initial.protein) : '');
-  const [source, setSource] = useState('manual');
+  const [description, setDescription] = useState(draft?.description ?? initial?.description ?? '');
+  const [calories, setCalories] = useState(
+    draft ? String(draft.calories) : initial ? String(initial.calories) : '',
+  );
+  const [protein, setProtein] = useState(
+    draft ? String(draft.protein) : initial ? String(initial.protein) : '',
+  );
+  const [source, setSource] = useState(draft?.source ?? 'manual');
 
   const [mode, setMode] = useState('form'); // 'form' | 'library'
   const [library, setLibrary] = useState(null);
@@ -165,6 +175,12 @@ export default function FoodSheet({ initial, onSave, onDelete, onClose }) {
       >
         {editing ? 'Save changes' : 'Add entry'}
       </button>
+
+      {!editing && onOpenSmart && (
+        <button className="btn btn-ghost" onClick={onOpenSmart}>
+          ✨ Describe / Scan
+        </button>
+      )}
 
       {!editing && (
         <button className="btn btn-ghost" onClick={() => setMode('library')}>
