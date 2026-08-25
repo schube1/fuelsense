@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Gym Food Water',
-        short_name: 'Daily',
-        description: 'Workout, nutrition and water logging.',
+        name: 'FuelSense',
+        short_name: 'FuelSense',
+        description: 'AI-assisted workout, nutrition and water logging.',
         start_url: '/',
         scope: '/',
         // 'standalone' is the setting that makes iOS launch this full-screen

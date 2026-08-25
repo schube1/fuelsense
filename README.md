@@ -1,4 +1,4 @@
-# Gym Food Water
+# FuelSense
 
 A personal workout / nutrition / water logger. Runs as a web app you add to your
 iPhone home screen, stores everything on your device, and can optionally sync to
@@ -12,7 +12,7 @@ You need Node 18 or newer. Check with `node -v`; if that errors, install it from
 [nodejs.org](https://nodejs.org) (take the LTS build) and reopen Terminal.
 
 ```bash
-cd ~/Documents/fall26projects/gymfoodwater
+cd ~/Documents/fall26projects/fuelsense
 npm install       # downloads the 6 dependencies. Once, ~30 seconds.
 npm run dev       # starts the dev server
 ```
@@ -51,9 +51,9 @@ least resistance:
    ```bash
    git init
    git add .
-   git commit -m "Gym Food Water v1"
+   git commit -m "FuelSense v1"
    # create an empty repo on github.com, then:
-   git remote add origin git@github.com:YOURNAME/gym-food-water.git
+   git remote add origin git@github.com:YOURNAME/fuelsense.git
    git push -u origin main
    ```
 
