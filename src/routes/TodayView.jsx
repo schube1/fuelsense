@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Rings from '../components/Rings.jsx';
 import RingLegend from '../components/RingLegend.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
+import BottleSizeSheet from '../components/BottleSizeSheet.jsx';
 import { useDay } from '../hooks/useDay.js';
+import { useBottleSizeGate } from '../hooks/useBottleSizeGate.js';
 import { useSettings } from '../state/SettingsContext.jsx';
 import * as store from '../data/store.js';
 import {
@@ -17,6 +19,7 @@ export default function TodayView({ date }) {
   const navigate = useNavigate();
   const { settings } = useSettings();
   const { day, loading, run } = useDay(date);
+  const { gated, sheetProps } = useBottleSizeGate(date, day, run);
 
   if (loading || !day) return <div className="loading">Loading…</div>;
 
@@ -72,7 +75,7 @@ export default function TodayView({ date }) {
       <div style={{ display: 'flex', gap: 10 }}>
         <button
           className="btn btn-water"
-          onClick={() => run(() => store.logWaterBottle(date))}
+          onClick={() => gated(() => run(() => store.logWaterBottle(date)))}
         >
           + Water
         </button>
@@ -89,6 +92,8 @@ export default function TodayView({ date }) {
       <button className="btn btn-ghost" onClick={() => navigate(`/day/${date}`)}>
         Open today in full
       </button>
+
+      <BottleSizeSheet {...sheetProps} />
     </div>
   );
 }
