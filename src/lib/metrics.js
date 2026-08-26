@@ -72,6 +72,24 @@ export function nutritionPct(day, goals, proteinWeight = 0.5) {
   return w * proPct + (1 - w) * calPct;
 }
 
+/**
+ * Suggested daily water target in fl oz.
+ *
+ * ~2/3 oz per lb of bodyweight is a common lifter/athlete guideline (plain
+ * "half your bodyweight" is the more conservative general-population number).
+ * Creatine monohydrate pulls extra water into muscle cells, so a flat bump is
+ * added on top rather than folded into the per-lb rate. Height isn't a real
+ * input to hydration need, so it's deliberately not part of this formula.
+ *
+ * Falls back to the app's original flat default (8 bottles x 16.9oz) until a
+ * bodyweight is set in Settings.
+ */
+export function waterTargetOz(settings) {
+  const weight = Number(settings?.bodyWeightLb) || 0;
+  if (weight <= 0) return 8 * 16.9; // the original flat default, exactly
+  return weight * 0.67 + (settings?.onCreatine ? 20 : 0);
+}
+
 /** WATER — bottles drunk over bottles targeted. */
 export function waterPct(day, goals) {
   const count = day?.water?.count ?? 0;

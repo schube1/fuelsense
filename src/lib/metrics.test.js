@@ -15,6 +15,7 @@ import {
   workoutPct,
   nutritionPct,
   waterPct,
+  waterTargetOz,
   ringPercents,
   dayScore,
   exerciseVolume,
@@ -141,6 +142,21 @@ test('waterPct is bottles over goal, clamped', () => {
   assert.equal(waterPct({ water: { count: 8 } }, GOALS), 1);
   assert.equal(waterPct({ water: { count: 12 } }, GOALS), 1);
   assert.equal(waterPct({}, GOALS), 0);
+});
+
+test('waterTargetOz falls back to the flat 8x16.9oz default with no bodyweight set', () => {
+  assert.equal(waterTargetOz({}), 135.2);
+  assert.equal(waterTargetOz({ onCreatine: true }), 135.2);
+});
+
+test('waterTargetOz is ~2/3 oz per lb of bodyweight', () => {
+  assert.equal(Math.round(waterTargetOz({ bodyWeightLb: 180 }) * 10) / 10, 120.6);
+});
+
+test('waterTargetOz adds a flat bump for creatine', () => {
+  const base = waterTargetOz({ bodyWeightLb: 180 });
+  const withCreatine = waterTargetOz({ bodyWeightLb: 180, onCreatine: true });
+  assert.equal(Math.round(withCreatine - base), 20);
 });
 
 // ---------------------------------------------------------------- combined

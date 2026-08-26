@@ -17,6 +17,7 @@ import * as local from './localStore.js';
 import { scheduleSync } from './sync.js';
 import { uid, slugify } from '../lib/id.js';
 import { makeExport, DEFAULT_SETTINGS } from './schema.js';
+import { waterTargetOz } from '../lib/metrics.js';
 
 /**
  * Wrap a write so that (a) it goes to the device immediately and (b) a
@@ -37,6 +38,7 @@ export const getEarliestDate = local.getEarliestDate;
 export const getExerciseNames = local.getExerciseNames;
 export const getSettings = local.getSettings;
 export const getFoodLibrary = local.getFoodLibrary;
+export const getWorkoutLibrary = local.getWorkoutLibrary;
 
 export async function saveSettings(patch) {
   const next = await local.saveSettings(patch);
@@ -50,6 +52,42 @@ export function setWorkoutNotes(date, notes) {
   return write(date, (day) => ({
     ...day,
     workout: { ...day.workout, notes },
+  }));
+}
+
+export function setWorkoutTitle(date, title) {
+  return write(date, (day) => ({
+    ...day,
+    workout: { ...day.workout, title: title.trim() },
+  }));
+}
+
+/**
+ * Replace today's exercises with a past workout's, tagging today with that
+ * same title. Sets get fresh ids so editing today never touches the
+ * original day the routine was copied from.
+ */
+export async function importWorkout(date, libraryEntry) {
+  await Promise.all(libraryEntry.exercises.map((e) => local.rememberExercise(e.name)));
+  return write(date, (day) => ({
+    ...day,
+    workout: {
+      ...day.workout,
+      title: libraryEntry.title,
+      exercises: libraryEntry.exercises.map((e) => ({
+        ...e,
+        id: uid('ex'),
+        sets: e.sets.map((s) => ({ ...s, id: uid('set') })),
+      })),
+    },
+  }));
+}
+
+/** "Start fresh" — abandon an imported routine and log manually instead. */
+export function resetWorkout(date) {
+  return write(date, (day) => ({
+    ...day,
+    workout: { ...day.workout, title: '', exercises: [] },
   }));
 }
 
@@ -183,6 +221,27 @@ export function undoWaterBottle(date) {
   return write(date, (day) => ({
     ...day,
     water: { ...day.water, count: Math.max(0, (day.water.count ?? 0) - 1) },
+  }));
+}
+
+/**
+ * Answer today's "how big is your bottle?" question. Recomputes this day's
+ * bottle goal from the target ounces and the size just given, and remembers
+ * the size as the new prefill default for next time.
+ */
+export async function setBottleSize(date, oz) {
+  const bottleOz = Number(oz);
+  if (!Number.isFinite(bottleOz) || bottleOz <= 0) {
+    throw new Error('Enter a bottle size greater than 0.');
+  }
+
+  const settings = await saveSettings({ bottleOz });
+  const bottleGoal = Math.max(1, Math.ceil(waterTargetOz(settings) / bottleOz));
+
+  return write(date, (day) => ({
+    ...day,
+    goals: { ...day.goals, bottleGoal, bottleOz },
+    water: { ...day.water, bottleOz },
   }));
 }
 

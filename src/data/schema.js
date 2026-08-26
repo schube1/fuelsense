@@ -2,6 +2,8 @@
  * The shape of the data, and the defaults.
  */
 
+import { waterTargetOz } from '../lib/metrics.js';
+
 export const SETTINGS_KEY = 'settings';
 export const SYNC_KEY = 'sync';
 export const EXERCISES_KEY = 'exercises';
@@ -15,8 +17,16 @@ export const DEFAULT_SETTINGS = {
   startDate: null,
   calorieGoal: 2500,
   proteinGoal: 200,
-  bottleGoal: 8,
+  /**
+   * The last bottle size you told the app, in fl oz. Used both as the prefill
+   * default the next time it asks, and as the estimate a brand-new day's
+   * bottle goal is computed from before that day's own question is answered.
+   */
   bottleOz: 16.9,
+  /** Bodyweight in lb, used to size the daily water target. Null until set. */
+  bodyWeightLb: null,
+  /** On creatine monohydrate? Adds a flat bump to the water target. */
+  onCreatine: false,
   /**
    * How much of the nutrition ring protein is worth. 0.5 = equal split with
    * calories, which is what you chose. Bump toward 0.7 if you decide hitting
@@ -35,17 +45,21 @@ export const DEFAULT_SETTINGS = {
  * rewrite itself.
  */
 export function emptyDay(date, settings = DEFAULT_SETTINGS) {
+  const bottleOz = settings.bottleOz || DEFAULT_SETTINGS.bottleOz;
+  const bottleGoal = Math.max(1, Math.ceil(waterTargetOz(settings) / bottleOz));
   return {
     date,
     goals: {
       calorieGoal: settings.calorieGoal,
       proteinGoal: settings.proteinGoal,
-      bottleGoal: settings.bottleGoal,
-      bottleOz: settings.bottleOz,
+      bottleGoal,
+      bottleOz,
     },
-    workout: { notes: '', exercises: [] },
+    workout: { title: '', notes: '', exercises: [] },
     nutrition: { entries: [] },
-    water: { count: 0, bottleOz: settings.bottleOz },
+    // bottleOz starts unset — the app asks again each day on your first log,
+    // since bottle size is the one thing you told us should vary day to day.
+    water: { count: 0, bottleOz: null },
     updatedAt: null,
     dirty: false,
   };
@@ -65,6 +79,7 @@ export function normalizeDay(day, date, settings = DEFAULT_SETTINGS) {
     ...day,
     goals: { ...base.goals, ...(day.goals ?? {}) },
     workout: {
+      title: day.workout?.title ?? '',
       notes: day.workout?.notes ?? '',
       exercises: (day.workout?.exercises ?? []).map((e) => ({
         id: e.id,
@@ -91,7 +106,10 @@ export function normalizeDay(day, date, settings = DEFAULT_SETTINGS) {
     },
     water: {
       count: Number(day.water?.count) || 0,
-      bottleOz: Number(day.water?.bottleOz) || settings.bottleOz,
+      // `null` here is meaningful — it means "hasn't answered today's bottle
+      // size question yet" — so it must survive a read, not get silently
+      // replaced by the settings default the way every other field is.
+      bottleOz: day.water?.bottleOz == null ? null : Number(day.water.bottleOz) || null,
     },
   };
 }

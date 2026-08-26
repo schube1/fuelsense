@@ -8,6 +8,7 @@
 
 import * as idb from '../lib/idb.js';
 import { buildFoodLibrary } from '../lib/food.js';
+import { buildWorkoutLibrary } from '../lib/workout.js';
 import {
   DEFAULT_SETTINGS,
   SETTINGS_KEY,
@@ -165,6 +166,11 @@ export async function replaceAll(days, settings) {
 export async function getFoodLibrary() {
   const days = await getAllDays();
   return buildFoodLibrary(days);
+}
+
+export async function getWorkoutLibrary() {
+  const days = await getAllDays();
+  return buildWorkoutLibrary(days);
 }
 
 export { emptyDay };

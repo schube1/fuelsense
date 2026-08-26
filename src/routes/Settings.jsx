@@ -6,6 +6,7 @@ import * as store from '../data/store.js';
 import * as sync from '../data/sync.js';
 import { cloudEnabled } from '../data/cloudStore.js';
 import { localDateKey } from '../lib/dates.js';
+import { waterTargetOz } from '../lib/metrics.js';
 
 export default function Settings() {
   const { settings, update } = useSettings();
@@ -127,20 +128,6 @@ export default function Settings() {
           </div>
 
           <div className="setting-row">
-            <label htmlFor="bottles">
-              Water bottles
-              <span>{settings.bottleOz} fl oz each.</span>
-            </label>
-            <input
-              id="bottles"
-              type="number"
-              inputMode="numeric"
-              defaultValue={settings.bottleGoal}
-              onBlur={(e) => update({ bottleGoal: num(e.target.value, settings.bottleGoal) })}
-            />
-          </div>
-
-          <div className="setting-row">
             <label htmlFor="weight">
               Protein weighting
               <span>
@@ -170,6 +157,50 @@ export default function Settings() {
           Changing a goal only affects days from here on. Each day stores the goals you were
           chasing at the time, so last month's rings don't rewrite themselves.
         </p>
+
+        {/* ------------------------------------------------------ hydration */}
+
+        <div className="section-head">Body & hydration</div>
+        <div className="card">
+          <div className="setting-row">
+            <label htmlFor="bodyweight">
+              Body weight (lb)
+              <span>Used to size your daily water target. Leave blank to use a flat default.</span>
+            </label>
+            <input
+              id="bodyweight"
+              type="number"
+              inputMode="numeric"
+              defaultValue={settings.bodyWeightLb ?? ''}
+              onBlur={(e) => {
+                const raw = e.target.value.trim();
+                const n = Number(raw);
+                update({ bodyWeightLb: raw && Number.isFinite(n) && n > 0 ? n : null });
+              }}
+            />
+          </div>
+
+          <div className="setting-row">
+            <label htmlFor="creatine">
+              Taking creatine monohydrate?
+              <span>Adds a flat bump to the water target — it pulls extra water into muscle.</span>
+            </label>
+            <input
+              id="creatine"
+              type="checkbox"
+              defaultChecked={settings.onCreatine}
+              onChange={(e) => update({ onCreatine: e.target.checked })}
+              style={{ width: 22, height: 22, flex: 'none' }}
+            />
+          </div>
+
+          <p style={{ fontSize: 12.5, color: 'var(--ink-2)', margin: '4px 2px 0' }}>
+            Target: {Math.round(waterTargetOz(settings))} fl oz/day (~
+            {Math.max(1, Math.ceil(waterTargetOz(settings) / settings.bottleOz))} bottles at{' '}
+            {settings.bottleOz} oz each). The app asks your bottle size each day when you log
+            your first one, so this count refines from there.
+          </p>
+        </div>
 
         {/* ------------------------------------------------------ backup */}
 

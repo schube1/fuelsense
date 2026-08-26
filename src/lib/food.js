@@ -53,14 +53,15 @@ export function buildFoodLibrary(days) {
 
 /**
  * Filter library items so that ALL words in query appear (case-insensitive
- * substring) in the item's description. Returns all items when query is empty.
+ * substring) in the item's `field`. Returns all items when query is empty.
+ * Shared by the food library and the workout library (see lib/workout.js).
  */
-export function filterLibrary(items, query) {
+export function filterLibrary(items, query, field = 'description') {
   const trimmed = (query ?? '').trim();
   if (!trimmed) return items;
   const words = trimmed.toLowerCase().split(/\s+/);
   return items.filter((item) => {
-    const desc = item.description.toLowerCase();
-    return words.every((w) => desc.includes(w));
+    const text = item[field].toLowerCase();
+    return words.every((w) => text.includes(w));
   });
 }
