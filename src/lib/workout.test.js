@@ -46,6 +46,21 @@ test('same title across two days: one entry, latest exercises, count 2', () => {
   assert.equal(lib[0].exercises[0].sets[0].weight, 205);
 });
 
+test('a stale unrelated edit to an old day does not resurrect its weights', () => {
+  // The older day (2026-08-01) gets touched again on 2026-08-15 — say the
+  // user logged a bottle of water on it after the fact — bumping its
+  // `updatedAt` past the genuinely newer workout day's `updatedAt`. The
+  // library must still prefer 2026-08-10's weight because that's the later
+  // calendar date.
+  const days = [
+    benchDay('2026-08-01', '2026-08-15T08:00:00Z', 185),
+    benchDay('2026-08-10', '2026-08-10T08:00:00Z', 205),
+  ];
+  const lib = buildWorkoutLibrary(days);
+  assert.equal(lib.length, 1);
+  assert.equal(lib[0].exercises[0].sets[0].weight, 205);
+});
+
 test('title case/whitespace variants collapse to one entry', () => {
   const days = [
     benchDay('2026-08-01', '2026-08-01T08:00:00Z', 185),
