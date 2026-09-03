@@ -33,7 +33,7 @@ layout is built for a phone and looks odd in a wide desktop window.
 **Other commands:**
 
 ```bash
-npm test          # runs the ring-math and date tests (no packages needed)
+npm test          # runs the unit tests: ring math, dates, schema, workout/food libraries
 npm run build     # compiles into dist/ for deploying
 npm run preview   # serves the built dist/ locally, to check it before deploying
 ```
