@@ -63,7 +63,6 @@ export default function FoodSheet({ initial, draft, onSave, onDelete, onClose, o
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search…"
-            autoFocus
             autoComplete="off"
           />
         </div>

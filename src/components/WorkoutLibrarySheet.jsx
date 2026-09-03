@@ -24,7 +24,6 @@ export default function WorkoutLibrarySheet({ onPick, onClose }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search…"
-          autoFocus
           autoComplete="off"
         />
       </div>
